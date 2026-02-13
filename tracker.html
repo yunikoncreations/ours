@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Care</title>
+    <style>
+        body { font-family: sans-serif; background: #fdfbf7; padding: 20px; color: #333; }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; background: #fff; box-sizing: border-box;}
+        label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .status { font-size: 0.8rem; color: #2ecc71; height: 20px; }
+        .privacy-note { font-size: 0.7rem; color: #aaa; margin-top: 30px; text-align: center; }
+    </style>
+</head>
+<body>
+    <a href="index.html" style="color: #ccc; text-decoration: none;">← Home</a>
+    <h3>Daily Care Journal</h3>
+    <div class="status" id="status"></div>
+
+    <label>Prenatal Vitamin Taken?</label>
+    <input type="text" id="vitamins" placeholder="Yes/No/Time">
+
+    <label>Water Intake</label>
+    <input type="text" id="water" placeholder="e.g., 5 glasses">
+
+    <label>Mood & Symptoms</label>
+    <textarea id="mood" rows="4" placeholder="How do you feel today?"></textarea>
+
+    <label>Food/Cravings</label>
+    <textarea id="food" rows="2"></textarea>
+
+    <div class="privacy-note">
+        🔒 Private: This data is saved only on this device.
+    </div>
+
+    <script>
+        // Load data immediately when page opens
+        const inputs = ['vitamins', 'water', 'mood', 'food'];
+        
+        inputs.forEach(id => {
+            const saved = localStorage.getItem(id);
+            if (saved) document.getElementById(id).value = saved;
+            
+            // Save data every time a key is pressed
+            document.getElementById(id).addEventListener('input', (e) => {
+                localStorage.setItem(id, e.target.value);
+                const status = document.getElementById('status');
+                status.innerText = 'Saved to phone.';
+                setTimeout(() => status.innerText = '', 2000);
+            });
+        });
+    </script>
+</body>
+</html>
+
