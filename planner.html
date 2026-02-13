@@ -3,63 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Planner</title>
+    <title>Our Planner</title>
     <style>
-        body { font-family: sans-serif; background: #fdfbf7; padding: 20px; max-width: 600px; margin: 0 auto; }
-        input, select, button { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background: #555; color: white; border: none; font-weight: bold; }
-        button:disabled { background: #ccc; }
-        .message { margin-top: 10px; text-align: center; }
-        .note { font-size: 0.8rem; color: #666; margin-bottom: 20px; }
+        body { font-family: sans-serif; background: #fdfbf7; padding: 20px; max-width: 600px; margin: 0 auto; color: #333; }
+        .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        h3 { margin-top: 0; color: #555; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        /* Form Styling */
+        input, select, button { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background: #78a1bb; color: white; border: none; font-weight: bold; cursor: pointer; }
+        
+        /* Calendar/Agenda Styling */
+        .appointment-card { border-left: 4px solid #78a1bb; padding: 10px; margin-bottom: 15px; background: #fafafa; }
+        .appt-date { font-weight: bold; color: #78a1bb; font-size: 1.1rem; }
+        .appt-details { font-size: 0.9rem; margin-top: 5px; }
+        .appt-notes { font-style: italic; color: #777; font-size: 0.85rem; margin-top: 5px; }
+        .no-data { color: #ccc; text-align: center; padding: 20px; }
+        
+        .loading-spinner { text-align: center; color: #999; font-style: italic; }
+        .back-link { text-decoration: none; color: #ccc; font-size: 0.8rem; display: block; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <a href="index.html" style="color: #ccc; text-decoration: none;">← Home</a>
-    <h3>Add Doctor Visit</h3>
-    <p class="note">These details go to our shared Google Sheet.</p>
-    
-    <form id="plannerForm">
-        <input type="date" name="date" required>
-        <input type="text" name="doctor" placeholder="Doctor/Hospital Name" required>
-        <input type="text" name="purpose" placeholder="Purpose (e.g., Ultrasound)" required>
-        <input type="text" name="notes" placeholder="Questions/Notes">
-        
-        <select name="addedBy">
-            <option value="Ichu">Added by Ichu</option>
-            <option value="Kunju">Added by Kunju</option>
-        </select>
-        
-        <button type="submit" id="submitBtn">Save to Sheet</button>
-    </form>
-    <div class="message" id="message"></div>
+    <a href="index.html" class="back-link">← Home</a>
+
+    <div class="section">
+        <h3>Add New Appointment</h3>
+        <form id="plannerForm">
+            <input type="date" name="date" id="formDate" required>
+            <input type="text" name="doctor" placeholder="Doctor / Clinic" required>
+            <input type="text" name="purpose" placeholder="Purpose (e.g. 20-week scan)" required>
+            <input type="text" name="notes" placeholder="Notes or questions to ask...">
+            <select name="addedBy">
+                <option value="Partner 1">Added by Partner 1</option>
+                <option value="Partner 2">Added by Partner 2</option>
+            </select>
+            <button type="submit" id="submitBtn">Save Appointment</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h3>Upcoming Agenda</h3>
+        <div id="loading" class="loading-spinner">Fetching our plans...</div>
+        <div id="agendaList"></div>
+    </div>
 
     <script>
-        // REPLACE THE LINK BELOW WITH YOUR GOOGLE SCRIPT URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5mfT15o1XFNfqoLqd9yOkkIzx-k4arbknKlc1cCDaYH6bcgdi-8qDnhgM92ZImLeu/exec';
+        // REPLACE WITH YOUR URL
+        const SCRIPT_URL = 'PASTE_YOUR_GOOGLE_SCRIPT_URL_HERE';
 
-        const form = document.getElementById('plannerForm');
-        const msg = document.getElementById('message');
-        const btn = document.getElementById('submitBtn');
+        // 1. Fetch and Display Appointments
+        function loadAppointments() {
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loading').style.display = 'none';
+                    const list = document.getElementById('agendaList');
+                    list.innerHTML = '';
 
-        form.addEventListener('submit', e => {
+                    // Filter for upcoming only and sort by date
+                    const today = new Date().setHours(0,0,0,0);
+                    const upcoming = data
+                        .filter(item => new Date(item.date) >= today)
+                        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                    if (upcoming.length === 0) {
+                        list.innerHTML = '<div class="no-data">No upcoming appointments. Time to relax.</div>';
+                        return;
+                    }
+
+                    upcoming.forEach(item => {
+                        const dateObj = new Date(item.date);
+                        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                            weekday: 'long', month: 'long', day: 'numeric' 
+                        });
+
+                        const card = document.createElement('div');
+                        card.className = 'appointment-card';
+                        card.innerHTML = `
+                            <div class="appt-date">${formattedDate}</div>
+                            <div class="appt-details"><strong>${item.doctor}</strong> — ${item.purpose}</div>
+                            ${item.notes ? `<div class="appt-notes">"${item.notes}"</div>` : ''}
+                        `;
+                        list.appendChild(card);
+                    });
+                })
+                .catch(err => {
+                    document.getElementById('loading').innerText = "Couldn't load appointments.";
+                });
+        }
+
+        // 2. Handle Form Submission
+        document.getElementById('plannerForm').addEventListener('submit', e => {
             e.preventDefault();
+            const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.innerText = "Saving...";
 
-            fetch(SCRIPT_URL, { method: 'POST', body: new FormData(form) })
-                .then(response => {
-                    msg.innerText = "Saved successfully! check the Sheet.";
-                    msg.style.color = "green";
-                    form.reset();
+            fetch(SCRIPT_URL, { method: 'POST', body: new FormData(e.target) })
+                .then(() => {
                     btn.disabled = false;
-                    btn.innerText = "Save to Sheet";
-                })
-                .catch(error => {
-                    msg.innerText = "Error saving. Check internet.";
-                    msg.style.color = "red";
-                    btn.disabled = false;
+                    btn.innerText = "Save Appointment";
+                    e.target.reset();
+                    loadAppointments(); // Refresh the list automatically
                 });
         });
+
+        // Load on startup
+        loadAppointments();
     </script>
 </body>
 </html>
