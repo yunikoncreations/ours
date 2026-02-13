@@ -3,53 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Care</title>
+    <title>Private Journal</title>
     <style>
-        body { font-family: sans-serif; background: #fdfbf7; padding: 20px; color: #333; }
-        input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; background: #fff; box-sizing: border-box;}
+        body { font-family: sans-serif; background: #fdfbf7; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; background: #fff; box-sizing: border-box; }
         label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-        .status { font-size: 0.8rem; color: #2ecc71; height: 20px; }
-        .privacy-note { font-size: 0.7rem; color: #aaa; margin-top: 30px; text-align: center; }
+        button { padding: 10px 20px; cursor: pointer; border: none; font-weight: bold; width: 100%; margin-bottom: 10px; }
+        .btn-save { background-color: #78a1bb; color: white; } /* Soft Blue */
+        .btn-export { background-color: #555; color: white; margin-top: 20px; }
+        .btn-clear { background-color: #e74c3c; color: white; margin-top: 5px; font-size: 0.8rem; }
+        
+        .history-section { margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px; }
+        .entry { background: white; padding: 15px; margin-bottom: 15px; border-left: 4px solid #78a1bb; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .date { font-weight: bold; font-size: 0.9rem; color: #555; margin-bottom: 5px; }
+        .data-row { font-size: 0.9rem; margin-bottom: 4px; }
+        .privacy-note { font-size: 0.7rem; color: #aaa; text-align: center; margin-top: 30px; }
     </style>
 </head>
 <body>
     <a href="index.html" style="color: #ccc; text-decoration: none;">← Home</a>
     <h3>Daily Care Journal</h3>
-    <div class="status" id="status"></div>
 
-    <label>Prenatal Vitamin Taken?</label>
-    <input type="text" id="vitamins" placeholder="Yes/No/Time">
+    <label>Date</label>
+    <input type="date" id="dateInput">
 
-    <label>Water Intake</label>
-    <input type="text" id="water" placeholder="e.g., 5 glasses">
+    <label>Vitamins / Water</label>
+    <input type="text" id="health" placeholder="e.g., Yes / 6 glasses">
 
-    <label>Mood & Symptoms</label>
-    <textarea id="mood" rows="4" placeholder="How do you feel today?"></textarea>
+    <label>Mood & Thoughts</label>
+    <textarea id="mood" rows="3" placeholder="How are you feeling?"></textarea>
 
-    <label>Food/Cravings</label>
-    <textarea id="food" rows="2"></textarea>
+    <label>Food & Cravings</label>
+    <textarea id="food" rows="2" placeholder="What did you eat?"></textarea>
+
+    <button onclick="saveEntry()" class="btn-save">Save Today's Entry</button>
+
+    <div class="history-section">
+        <h3>Your History</h3>
+        <div id="historyList"></div>
+        
+        <button onclick="exportData()" class="btn-export">📥 Export Journal to File</button>
+        <button onclick="clearData()" class="btn-clear">🗑️ Clear All Data</button>
+    </div>
 
     <div class="privacy-note">
-        🔒 Private: This data is saved only on this device.
+        🔒 Data stays on this device. Clearing cache deletes it.
     </div>
 
     <script>
-        // Load data immediately when page opens
-        const inputs = ['vitamins', 'water', 'mood', 'food'];
-        
-        inputs.forEach(id => {
-            const saved = localStorage.getItem(id);
-            if (saved) document.getElementById(id).value = saved;
+        // 1. Load existing history when page opens
+        document.addEventListener('DOMContentLoaded', loadHistory);
+
+        // Set date input to today automatically
+        document.getElementById('dateInput').valueAsDate = new Date();
+
+        function saveEntry() {
+            const entry = {
+                id: Date.now(), // Unique ID
+                date: document.getElementById('dateInput').value,
+                health: document.getElementById('health').value,
+                mood: document.getElementById('mood').value,
+                food: document.getElementById('food').value
+            };
+
+            // Get current history, add new entry, save back
+            let history = JSON.parse(localStorage.getItem('pregnancy_journal') || "[]");
+            history.unshift(entry); // Add to top of list
+            localStorage.setItem('pregnancy_journal', JSON.stringify(history));
+
+            // Clear inputs and reload list
+            document.getElementById('health').value = '';
+            document.getElementById('mood').value = '';
+            document.getElementById('food').value = '';
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const list = document.getElementById('historyList');
+            const history = JSON.parse(localStorage.getItem('pregnancy_journal') || "[]");
             
-            // Save data every time a key is pressed
-            document.getElementById(id).addEventListener('input', (e) => {
-                localStorage.setItem(id, e.target.value);
-                const status = document.getElementById('status');
-                status.innerText = 'Saved to phone.';
-                setTimeout(() => status.innerText = '', 2000);
+            list.innerHTML = history.length ? '' : '<p style="color:#ccc">No entries yet.</p>';
+
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'entry';
+                div.innerHTML = `
+                    <div class="date">${item.date}</div>
+                    <div class="data-row"><strong>Health:</strong> ${item.health}</div>
+                    <div class="data-row"><strong>Mood:</strong> ${item.mood}</div>
+                    <div class="data-row"><strong>Food:</strong> ${item.food}</div>
+                `;
+                list.appendChild(div);
             });
-        });
+        }
+
+        function exportData() {
+            const history = localStorage.getItem('pregnancy_journal');
+            if (!history) return alert("No data to export!");
+
+            // Format JSON into readable text
+            const data = JSON.parse(history);
+            let textContent = "MY PREGNANCY JOURNAL\n====================\n\n";
+            
+            data.forEach(item => {
+                textContent += `Date: ${item.date}\n`;
+                textContent += `Health: ${item.health}\n`;
+                textContent += `Mood: ${item.mood}\n`;
+                textContent += `Food: ${item.food}\n`;
+                textContent += "--------------------\n";
+            });
+
+            // Create a downloadable file
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my-journal-backup.txt';
+            a.click();
+        }
+
+        function clearData() {
+            if(confirm("Are you sure? This will delete all entries on this phone.")) {
+                localStorage.removeItem('pregnancy_journal');
+                loadHistory();
+            }
+        }
     </script>
 </body>
 </html>
-
