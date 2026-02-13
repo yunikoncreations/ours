@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For Us</title>
+    <title>Our Private Space</title>
     <style>
         body {
             font-family: 'Georgia', serif;
-            background-color: #fdfbf7; /* Soft off-white */
-            color: #4a4a4a;
-            line-height: 1.6;
+            background-color: #fffaf5; /* Warmer, creamier background */
+            color: #444;
+            line-height: 1.8;
             margin: 0;
-            padding: 20px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -19,41 +19,48 @@
             text-align: center;
         }
         .container {
-            max-width: 600px;
-            margin-top: 10vh;
-            animation: fadeIn 3s ease-in;
+            max-width: 550px;
+            margin-top: 8vh;
+            animation: softFade 4s ease-in;
         }
-        h1 { font-weight: normal; font-style: italic; margin-bottom: 40px; }
-        p { margin-bottom: 20px; font-size: 1.1rem; }
-        .nav { margin-top: 50px; border-top: 1px solid #ddd; padding-top: 20px; }
+        h1 { font-weight: normal; font-style: italic; color: #8e9aaf; margin-bottom: 30px; }
+        p { margin-bottom: 25px; font-size: 1.15rem; color: #555; }
+        .emphasis { font-style: italic; color: #78a1bb; }
+        .nav { margin-top: 60px; border-top: 1px solid #eee; padding-top: 30px; }
         .nav a {
-            display: block;
-            margin: 15px 0;
+            display: inline-block;
+            margin: 10px 15px;
             text-decoration: none;
-            color: #888;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
+            color: #999;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
             text-transform: uppercase;
+            transition: color 0.3s;
         }
-        @keyframes fadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
+        .nav a:hover { color: #78a1bb; }
+        @keyframes softFade {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>My Dearest,</h1>
-        <p>I built this space for us. Not with money, but with time and thought.</p>
-        <p>This is a quiet place to organize our thoughts, track our health, and prepare for the life we are bringing into the world.</p>
-        <p>I am here with you, every step, every day.</p>
+        <h1>To my partner in everything,</h1>
+        
+        <p>I wanted to give you a place that didn't exist until I sat down to create it for you.</p>
+        
+        <p>There are a thousand apps we could download, but none of them know <span class="emphasis">us</span>. None of them know the way my heart skips when we talk about the future, or the quiet strength I see in you every single day of this pregnancy.</p>
+        
+        <p>I built this, line by line, because your journey deserves a home that is as private, as safe, and as dedicated as I am to you and our little one.</p>
+        
+        <p>Every time you log a thought here, know that I am right there with you.</p>
         
         <div class="nav">
-            <a href="baby.html">Letter to Baby</a>
-            <a href="planner.html">Doctor Visits</a>
-            <a href="tracker.html">Your Private Journal</a>
+            <a href="baby.html">To Our Baby</a>
+            <a href="planner.html">Our Plans</a>
+            <a href="tracker.html">Your Heart</a>
         </div>
     </div>
 </body>
 </html>
-
